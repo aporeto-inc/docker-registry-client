@@ -73,10 +73,17 @@ func (registry *Registry) ManifestDigest(repository, reference string) (digest.D
 	url := registry.url("/v2/%s/manifests/%s", repository, reference)
 	registry.Logf("registry.manifest.head url=%s repository=%s reference=%s", url, repository, reference)
 
-	resp, err := registry.Client.Head(url)
-	if resp != nil {
-		defer resp.Body.Close()
+	// dave@aporeto.com:
+	// 	must add request header "Accept: application/vnd.docker.distribution.manifest.v2+json"
+	// else response header 'Docker-Content-Digest' contains wrong (V1?) hash
+	// https://forums.docker.com/t/get-image-digest-from-remote-registry-via-api/9480
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return "", err
 	}
+	req.Header.Set("Accept", manifestV2.MediaTypeManifest)
+
+	resp, err := registry.Client.Do(req)
 	if err != nil {
 		return "", err
 	}
