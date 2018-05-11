@@ -53,6 +53,5 @@ func (reg *Registry) TagsAt(repo string, dig digest.Digest) (tags []string, err 
 	if err != nil {
 		log.Fatal("failed to decode manifest: ", err)
 	}
-	reg.Logf("detailed digest = %+v", tagList)
 	return tagList, nil
 }
